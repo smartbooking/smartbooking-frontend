@@ -2,7 +2,7 @@
   <div class="SectionPlan" ref="sectionPlan"
        @mousemove="onBuildingPlanMouseMove($event)"
        @mousedown="onBuildingPlanMouseDown($event)">
-    <Table v-show="activeMode === modes.newTableTool" ref="newTable" :table="newTable"></Table>
+    <Table v-show="activeMode === modes.newTableTool" :table="newTable" @created="setTableComponent"></Table>
     <Table v-for="table in tables" :key="table.id" :table="table" @click="onTableClick" @created="setTableComponent"></Table>
   </div>
 </template>
@@ -27,6 +27,7 @@
             cx: -20,
             cy: -20
           },
+          seatsCount: 4,
           component: null
         },
         activeTable: null,
@@ -37,6 +38,7 @@
         },
         left: 0,
         top: 0,
+        isValid: true
       }
     },
     mounted() {
@@ -51,18 +53,21 @@
             cx: event.clientX - this.left,
             cy: event.clientY - this.top
           }
-          this.$refs.newTable.setInvalid(this.isActiveTableOverlapping(this.$refs.newTable))
+          this.testTableIntersection(this.newTable)
         } else if (this.isDraggingMode(event)) {
-          this.activeTable.setCoordinates({
+          this.activeTable.component.setCoordinates({
             cx: event.clientX - this.left,
             cy: event.clientY - this.top
           })
-          this.activeTable.setInvalid(this.isActiveTableOverlapping())
+          this.testTableIntersection(this.activeTable)
         }
       },
       onBuildingPlanMouseDown() {
         if (this.activeMode === this.modes.newTableTool) {
-          this.$emit('addTable', { coordinates: this.newTable.coordinates })
+          this.$emit('addTable', {
+            coordinates: this.newTable.coordinates,
+            seatsCount: this.newTable.seatsCount
+          })
         } else {
           this.setActiveTable(null)
         }
@@ -81,12 +86,12 @@
         }
       },
       setTableComponent(table, component) {
-        table.component = component;
+        table.component = component
       },
       setActiveTable(table) {
-        if (this.activeTable) this.activeTable.makeInactive()
+        if (this.activeTable) this.activeTable.component.makeInactive()
         this.activeTable = table
-        if (table) table.makeActive()
+        if (table) table.component.makeActive()
         this.$emit('setActiveTable', table)
       },
       isDraggingMode(event) {
@@ -94,25 +99,34 @@
           this.activeTable &&
           event.which === 1
       },
-      isActiveTableOverlapping(testableTable = this.activeTable) {
-        const  testableTableBoundaries = testableTable.boundaries
+      testTableIntersection(testableTable = this.activeTable) {
+        if (!testableTable) return false
 
-        this.tables.forEach((table) => {
+        let result = false
+        const testableTableBoundaries = testableTable.component.boundaries
+
+        for (let table of this.tables) {
+          if (table === testableTable) continue
+
           const tableBoundaries = table.component.boundaries
-          if (
-            testableTableBoundaries.top > tableBoundaries.bottom ||
-            testableTableBoundaries.right < tableBoundaries.left ||
-            testableTableBoundaries.bottom < tableBoundaries.top ||
-            testableTableBoundaries.left > tableBoundaries.right
-          ) {
-            console.log('overlap')
-            return true
+
+          if (Math.max(testableTableBoundaries.left, tableBoundaries.left) < Math.min(testableTableBoundaries.right, tableBoundaries.right) &&
+            Math.max(testableTableBoundaries.top, tableBoundaries.top) < Math.min(testableTableBoundaries.bottom, tableBoundaries.bottom)) {
+            testableTable.component.trackIntersection(table, true)
+            table.component.trackIntersection(testableTable, true)
+            result = true
           }
-        })
-        console.log('does not overlap')
-        return false
+          else {
+            testableTable.component.trackIntersection(table, false)
+            table.component.trackIntersection(testableTable, false)
+          }
+        }
+
+        this.$emit('onValidationResultChange', !result)
+
+        return result
       }
-    },
+    }
   }
 </script>
 

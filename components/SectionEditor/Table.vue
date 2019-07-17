@@ -13,21 +13,20 @@ export default {
   props: {
     table: {
       type: Object,
-      required: true
+      required: true,
     }
   },
   data() {
     return {
       isActive: false,
-      isInvalid: false,
       drawingContext: null,
       radius: 20,
-      size: 50,
+      size: 40,
       activeColor: 'green',
       inactiveColor: 'black',
       invalidColor: 'red',
-      seatsCount: 4,
-      id: null
+      id: null,
+      intersections: {}
     }
   },
   computed: {
@@ -45,8 +44,23 @@ export default {
         left: this.table.coordinates.cx - this.size / 2
       }
     },
+    width() {
+      return this.size
+    },
+    height() {
+      return this.size
+    },
     zIndex() {
       return this.isActive ? 1 : 0
+    },
+    strokeColor() {
+      if (this.isInvalid) return this.invalidColor
+      if (this.isActive) return this.activeColor
+
+      return this.inactiveColor
+    },
+    isInvalid() {
+      return Object.keys(this.intersections).length
     }
   },
   mounted() {
@@ -65,7 +79,7 @@ export default {
       this.redraw()
     },
     emitClick($event) {
-      this.$emit('click', this, $event)
+      this.$emit('click', this.table, $event)
     },
     redraw() {
       this.drawingContext.clearRect(0, 0, this.size, this.size)
@@ -78,15 +92,13 @@ export default {
         2 * Math.PI
       )
       this.drawingContext.closePath()
-      this.drawingContext.strokeStyle = this.isActive
-        ? this.activeColor
-        : this.inactiveColor
+      this.drawingContext.strokeStyle = this.strokeColor
       this.drawingContext.fillStyle = 'white'
       this.drawingContext.fill()
       this.drawingContext.textAlign = 'center'
       this.drawingContext.fillStyle = 'black'
       this.drawingContext.fillText(
-        this.seatsCount,
+        this.table.seatsCount,
         this.size / 2,
         this.size / 2
       )
@@ -96,12 +108,20 @@ export default {
       this.table.coordinates.cx = cx
       this.table.coordinates.cy = cy
     },
-    setInvalid(value) {
-      this.isInvalid = value
+    trackIntersection(anotherTable, isIntersecting) {
+      if (isIntersecting) {
+        this.$set(this.intersections, anotherTable.component.id, true)
+      }
+      else {
+        this.$delete(this.intersections, anotherTable.component.id)
+      }
     }
   },
   watch: {
-    seatsCount() {
+    'table.seatsCount'() {
+      this.redraw()
+    },
+    isInvalid() {
       this.redraw()
     }
   }

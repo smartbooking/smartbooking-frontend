@@ -1,14 +1,15 @@
 <template>
   <div class="Wrapper">
     <Toolbox ref="toolbox" @setActiveTool="setActiveTool"></Toolbox>
-    <SectionPlan ref="sectionPlan" @addTable="addTable" :tables="tables" @setActiveTable="setActiveTable">
+    <SectionPlan ref="sectionPlan" @addTable="addTable" :tables="tables" @setActiveTable="setActiveTable" @onValidationResultChange="setValidationResult">
     </SectionPlan>
     <span v-if="activeTable">
-      {{ activeTable.boundaries }}
+      {{ activeTable.component.boundaries }}
       <div>
         Seats Count: <input type="number" v-model="activeTable.seatsCount"/>
       </div>
     </span>
+    Valid: {{validationResult}}
   </div>
 </template>
 <script>
@@ -20,7 +21,8 @@ export default {
   data() {
     return {
       tables: [],
-      activeTable: null
+      activeTable: null,
+      validationResult: true
     }
   },
   computed: {
@@ -37,6 +39,9 @@ export default {
     },
     addTable(tableData) {
       this.tables.push(tableData)
+    },
+    setValidationResult(result) {
+      this.validationResult = result;
     }
   }
 }
@@ -49,4 +54,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+  button {
+    color: black;
+  }
 </style>
