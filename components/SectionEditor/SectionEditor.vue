@@ -12,13 +12,22 @@
                        @onValidationResultChange="setValidationResult">
           </SectionPlan>
         </v-flex>
-        <v-flex xs3 class="ActiveTablePreferences" v-if="activeTable && sectionPlan.activeMode != sectionPlan.modes.newTableTool">
-          <v-text-field label="CY" v-bind:value="activeTable.coordinates.cy"
-                        type="number" readonly/>
-          <v-text-field label="CX" v-bind:value="activeTable.coordinates.cx"
-                        type="number" readonly/>
-          <v-text-field label="Seats Count" v-model="activeTable.seatsCount"
-                        type="number"/>
+        <v-flex xs3 class="ActiveTablePreferences">
+          <v-layout row wrap v-if="activeTable && sectionPlan.activeMode != sectionPlan.modes.newTableTool">
+            <v-flex xs6>
+              <v-text-field label="CY" v-bind:value="activeTable.coordinates.cy"
+                            type="number" readonly/>
+            </v-flex>
+            <v-flex xs6>
+              <v-text-field label="CX" v-bind:value="activeTable.coordinates.cx"
+                            type="number" readonly/>
+            </v-flex>
+            <v-flex xs12>
+              <v-text-field label="Seats Count" v-model="activeTable.seatsCount"
+                            type="number"/>
+            </v-flex>
+          </v-layout>
+          <span v-else>Select the table to edit its properties</span>
         </v-flex>
         <v-flex xs12>
           <div>Valid: {{validationResult}}</div>
@@ -95,6 +104,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    border: 1px solid white;
   }
   .SectionPlan {
     height: 100%

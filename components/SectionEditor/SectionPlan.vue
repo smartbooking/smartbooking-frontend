@@ -123,6 +123,9 @@
 
         if (this.activeMode == this.modes.newTableTool) {
           this.setActiveTable(this.newTable)
+        } else if (this.activeMode == this.modes.pointerTool) {
+          this.newTable.coordinates = { cx: -20, cy: -20 }
+          this.setTableIntersection(this.newTable, false)
         }
       },
       onTableClick(table, $event) {
