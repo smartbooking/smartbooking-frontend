@@ -153,7 +153,6 @@
       setTableIntersection(testableTable = this.activeTable, forcedValue = null) {
         if (!testableTable) return
 
-        const testableTableBoundaries = testableTable.component.boundaries
         const testableTables = this.tables.filter(t => t.component)
 
         for (let table of testableTables) {
@@ -164,10 +163,12 @@
             continue
           }
 
-          const tableBoundaries = table.component.boundaries
+          const distanceBetweenCenters = Math.sqrt(
+            Math.pow(testableTable.coordinates.cx - table.coordinates.cx, 2) +
+            Math.pow(testableTable.coordinates.cy - table.coordinates.cy, 2)
+          )
 
-          const intersects = Math.max(testableTableBoundaries.left, tableBoundaries.left) < Math.min(testableTableBoundaries.right, tableBoundaries.right) &&
-            Math.max(testableTableBoundaries.top, tableBoundaries.top) < Math.min(testableTableBoundaries.bottom, tableBoundaries.bottom)
+          const intersects = distanceBetweenCenters < table.component.radius + testableTable.component.radius
 
           testableTable.component.trackIntersection(table, intersects)
           table.component.trackIntersection(testableTable, intersects)
