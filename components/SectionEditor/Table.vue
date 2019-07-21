@@ -9,6 +9,8 @@
 </template>
 
 <script>
+const MAX_SEATS_COUNT = 8
+
 export default {
   props: {
     table: {
@@ -22,19 +24,21 @@ export default {
       drawingContext: null,
       radius: 20,
       size: 40,
-      activeColor: 'green',
-      inactiveColor: 'black',
-      invalidColor: 'red',
+      colors: {
+        active: 'green',
+        inactive: 'black',
+        invalid: 'red'
+      },
       id: null,
       intersections: {}
     }
   },
   computed: {
     top() {
-      return `${this.table.coordinates.cy - this.radius - 5}px`
+      return `${this.table.coordinates.cy - this.radius}px`
     },
     left() {
-      return `${this.table.coordinates.cx - this.radius - 5}px`
+      return `${this.table.coordinates.cx - this.radius}px`
     },
     boundaries() {
       return {
@@ -43,6 +47,9 @@ export default {
         bottom: this.table.coordinates.cy + this.size / 2,
         left: this.table.coordinates.cx - this.size / 2
       }
+    },
+    coordinates() {
+      return this.table.coordinates
     },
     width() {
       return this.size
@@ -54,29 +61,29 @@ export default {
       return this.isActive ? 1 : 0
     },
     strokeColor() {
-      if (this.isInvalid) return this.invalidColor
-      if (this.isActive) return this.activeColor
+      if (this.isInvalid) return this.colors.invalid
+      if (this.isActive) return this.colors.active
 
-      return this.inactiveColor
+      return this.colors.inactive
     },
     isInvalid() {
-      return Object.keys(this.intersections).length
+      return Object.keys(this.intersections).length ||
+        !this.table.seatsCount ||
+        this.table.seatsCount > MAX_SEATS_COUNT
     }
   },
   mounted() {
-    this.drawingContext = this.$refs.canvas.getContext('2d')
     this.id = Math.random()
+    this.drawingContext = this.$refs.canvas.getContext('2d')
     this.redraw()
     this.$emit('created', this.table, this)
   },
   methods: {
     makeActive() {
       this.isActive = true
-      this.redraw()
     },
     makeInactive() {
       this.isActive = false
-      this.redraw()
     },
     emitClick($event) {
       this.$emit('click', this.table, $event)
@@ -97,10 +104,18 @@ export default {
       this.drawingContext.fill()
       this.drawingContext.textAlign = 'center'
       this.drawingContext.fillStyle = 'black'
+      this.drawingContext.font = "16px serif"
       this.drawingContext.fillText(
         this.table.seatsCount,
         this.size / 2,
         this.size / 2
+      )
+
+      this.drawingContext.font = "9px serif"
+      this.drawingContext.fillText(
+        'seats',
+        this.size / 2,
+        this.size / 2 + 12
       )
       this.drawingContext.stroke()
     },
@@ -121,7 +136,11 @@ export default {
     'table.seatsCount'() {
       this.redraw()
     },
-    isInvalid() {
+    isInvalid(isNowInvalid) {
+      this.redraw()
+      this.$emit('onValidationResultChange', !isNowInvalid)
+    },
+    isActive() {
       this.redraw()
     }
   }

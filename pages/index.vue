@@ -1,7 +1,7 @@
 <template>
-  <v-layout column justify-center align-center>
+  <v-container>
     <SectionEditor/>
-  </v-layout>
+  </v-container>
 </template>
 
 <script>
@@ -13,3 +13,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.Wrapper {
+  height: 400px;
+}
+</style>
