@@ -22,8 +22,6 @@ export default {
     return {
       isActive: false,
       drawingContext: null,
-      radius: 20,
-      size: 40,
       colors: {
         active: 'green',
         inactive: 'black',
@@ -34,6 +32,12 @@ export default {
     }
   },
   computed: {
+    radius() {
+      return Math.ceil((Math.sqrt(Math.min(this.table.seatsCount, 20)) || 1) * 20)
+    },
+    size() {
+      return this.radius * 2
+    },
     top() {
       return `${this.table.coordinates.cy - this.radius}px`
     },
@@ -42,10 +46,10 @@ export default {
     },
     boundaries() {
       return {
-        top: this.table.coordinates.cy - this.size / 2,
-        right: this.table.coordinates.cx + this.size / 2,
-        bottom: this.table.coordinates.cy + this.size / 2,
-        left: this.table.coordinates.cx - this.size / 2
+        top: this.table.coordinates.cy - this.radius,
+        right: this.table.coordinates.cx + this.radius,
+        bottom: this.table.coordinates.cy + this.radius,
+        left: this.table.coordinates.cx - this.radius
       }
     },
     coordinates() {
@@ -89,17 +93,11 @@ export default {
       this.$emit('click', this.table, $event)
     },
     redraw() {
+      this.drawingContext.strokeStyle = this.strokeColor
       this.drawingContext.clearRect(0, 0, this.size, this.size)
       this.drawingContext.beginPath()
-      this.drawingContext.arc(
-        this.size / 2,
-        this.size / 2,
-        this.radius,
-        0,
-        2 * Math.PI
-      )
+      this.drawingContext.arc(this.radius, this.radius, this.radius, 0, 2 * Math.PI)
       this.drawingContext.closePath()
-      this.drawingContext.strokeStyle = this.strokeColor
       this.drawingContext.fillStyle = 'white'
       this.drawingContext.fill()
       this.drawingContext.textAlign = 'center'
@@ -107,8 +105,8 @@ export default {
       this.drawingContext.font = "16px serif"
       this.drawingContext.fillText(
         this.table.seatsCount,
-        this.size / 2,
-        this.size / 2
+        this.radius,
+        this.radius
       )
 
       this.drawingContext.font = "9px serif"
