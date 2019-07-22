@@ -1,8 +1,6 @@
 <template>
   <canvas
     @mousedown="emitClick($event)"
-    :width="size"
-    :height="size"
     ref="canvas"
     :style="{ top: top, left: left, 'z-index': zIndex }"
   />
@@ -43,14 +41,6 @@ export default {
     },
     left() {
       return `${this.table.coordinates.cx - this.radius}px`
-    },
-    boundaries() {
-      return {
-        top: this.table.coordinates.cy - this.radius,
-        right: this.table.coordinates.cx + this.radius,
-        bottom: this.table.coordinates.cy + this.radius,
-        left: this.table.coordinates.cx - this.radius
-      }
     },
     coordinates() {
       return this.table.coordinates
@@ -93,11 +83,19 @@ export default {
       this.$emit('click', this.table, $event)
     },
     redraw() {
-      this.drawingContext.strokeStyle = this.strokeColor
-      this.drawingContext.clearRect(0, 0, this.size, this.size)
+      this.drawingContext.clearRect(
+        0,
+        0,
+        this.width,
+        this.height
+      )
+      this.$refs.canvas.width = this.width
+      this.$refs.canvas.height = this.height
       this.drawingContext.beginPath()
+      this.drawingContext.fillStyle = 'black'
+      this.drawingContext.strokeStyle = this.strokeColor
       this.drawingContext.arc(this.radius, this.radius, this.radius, 0, 2 * Math.PI)
-      this.drawingContext.closePath()
+      this.drawingContext.stroke()
       this.drawingContext.fillStyle = 'white'
       this.drawingContext.fill()
       this.drawingContext.textAlign = 'center'
@@ -116,6 +114,7 @@ export default {
         this.size / 2 + 12
       )
       this.drawingContext.stroke()
+      this.drawingContext.closePath()
     },
     setCoordinates({ cx, cy }) {
       this.table.coordinates.cx = cx
@@ -124,8 +123,7 @@ export default {
     trackIntersection(anotherTable, isIntersecting) {
       if (isIntersecting) {
         this.$set(this.intersections, anotherTable.component.id, true)
-      }
-      else {
+      } else {
         this.$delete(this.intersections, anotherTable.component.id)
       }
     }

@@ -23,7 +23,7 @@
                             type="number" readonly/>
             </v-flex>
             <v-flex xs12>
-              <v-text-field label="Seats Count" v-model="activeTable.seatsCount"
+              <v-text-field label="Seats Count" v-model.number="activeTable.seatsCount"
                             type="number"/>
             </v-flex>
           </v-layout>
@@ -40,59 +40,59 @@
   </div>
 </template>
 <script>
-  import Toolbox from '~/components/SectionEditor/Toolbox.vue'
-  import SectionPlan from '~/components/SectionEditor/SectionPlan.vue'
+import Toolbox from '~/components/SectionEditor/Toolbox.vue'
+import SectionPlan from '~/components/SectionEditor/SectionPlan.vue'
 
-  const LOCAL_STORAGE_KEY = 'section-plan'
+const LOCAL_STORAGE_KEY = 'section-plan'
 
-  export default {
-    components: { Toolbox, SectionPlan },
-    data() {
-      return {
-        tables: [],
-        activeTable: null,
-        validationResult: true
-      }
+export default {
+  components: { Toolbox, SectionPlan },
+  data() {
+    return {
+      tables: [],
+      activeTable: null,
+      validationResult: true
+    }
+  },
+  computed: {
+    sectionPlan() {
+      return this.$refs.sectionPlan
+    }
+  },
+  created() {
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY)
+
+    if (savedData) this.tables = JSON.parse(savedData)
+  },
+  methods: {
+    setActiveTool(tool) {
+      this.$refs.sectionPlan.setActiveTool(tool)
     },
-    computed: {
-      sectionPlan() {
-        return this.$refs.sectionPlan
-      }
+    setActiveTable(activeTable) {
+      this.activeTable = activeTable
     },
-    created() {
-      const savedData = localStorage.getItem(LOCAL_STORAGE_KEY)
-
-      if (savedData) this.tables = JSON.parse(savedData)
+    addTable(tableData) {
+      this.tables.push(tableData)
     },
-    methods: {
-      setActiveTool(tool) {
-        this.$refs.sectionPlan.setActiveTool(tool)
-      },
-      setActiveTable(activeTable) {
-        this.activeTable = activeTable
-      },
-      addTable(tableData) {
-        this.tables.push(tableData)
-      },
-      removeTable(tableData) {
-        this.$refs.sectionPlan.setActiveTable(null)
-        this.$delete(this.tables, this.tables.indexOf(tableData));
-      },
-      setValidationResult(result) {
-        this.validationResult = result
-      },
-      saveConfiguration() {
-        const data = this.tables.map(table => {
-          return {
-            coordinates: table.coordinates,
-            seatsCount: table.seatsCount
-          }
-        })
+    removeTable(tableData) {
+      this.$refs.sectionPlan.setActiveTable(null)
+      this.$delete(this.tables, this.tables.indexOf(tableData))
+    },
+    setValidationResult(result) {
+      this.validationResult = result
+    },
+    saveConfiguration() {
+      const data = this.tables.map(table => {
+        return {
+          coordinates: table.coordinates,
+          seatsCount: table.seatsCount
+        }
+      })
 
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
-      }
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
     }
   }
+}
 </script>
 
 <style scoped lang="scss">
