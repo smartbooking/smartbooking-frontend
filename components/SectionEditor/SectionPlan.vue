@@ -16,6 +16,7 @@
       :table="table"
       @click="onTableClick"
       @created="setTableComponent"
+      @onResize="setCoercedTableCoordinates"
       @onValidationResultChange="throttleValidationResultChange"
     />
   </div>
@@ -69,6 +70,23 @@ export default {
   methods: {
     setBoundingClientRect() {
       this.boundingClientRect = this.$refs.sectionPlan.getBoundingClientRect()
+    },
+    coercedTableCoordinates(coordinates, radius) {
+      let coercedCx = coordinates.cx < radius ? radius : coordinates.cx
+      coercedCx = coercedCx > this.boundingClientRect.width - radius ? this.boundingClientRect.width - radius : coercedCx
+
+      let coercedCy = coordinates.cy < radius ? radius : coordinates.cy
+      coercedCy = coercedCy > this.boundingClientRect.height - radius ? this.boundingClientRect.height - radius : coercedCy
+
+      return { cx: coercedCx, cy: coercedCy }
+    },
+    setCoercedTableCoordinates(table) {
+      table.component.setCoordinates(
+        this.coercedTableCoordinates(
+          table.component.coordinates,
+          table.component.radius
+        )
+      )
     },
     onKeyDown(event) {
       if (

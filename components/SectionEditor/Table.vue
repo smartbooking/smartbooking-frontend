@@ -131,6 +131,7 @@ export default {
   watch: {
     'table.seatsCount'() {
       this.redraw()
+      this.$emit('onResize', this.table)
     },
     isInvalid(isNowInvalid) {
       this.redraw()
